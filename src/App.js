@@ -7,38 +7,46 @@ import axios from 'axios';
 class App extends React.Component {
   state = {
     handle: '',
-    followerList: []
+    followerList: [],
+    githubURL: 'https://api.github.com/users/stevenr2314',
+    userData: {}
   }
 
-  handleSearch = handle => {
+  handleSearch = event => {
+    event.preventDefault()
+    let handle = this.state.handle.trim()
+    this.setState({...this.state, githubURL: `https://api.github.com/users/${handle}`, handle: ''})
     console.log('SEARCHING')
   }
 
   handleChange = event => {
-    newValue = event.target.value
+    let newValue = event.target.value
     this.setState({handle: newValue})
   }
 
   componentDidMount() {
-    axios.get("https://api.github.com/users/stevenr2314")
-      .then(resp => console.log(resp))
+      axios.get(this.state.githubURL)
+      .then(resp => {
+        console.log(resp.data)
+        this.setState({...this.state, userData: resp.data})
+      })
       .catch(err => console.log(err))
   }
   render() {
     return(
     <div>
       <h1>GITHUB INFO</h1>
-      <form> 
+      <form onSubmit={this.handleSearch}> 
         <input 
           name='handle'
           type='text'
           placeholder='Github Handle'
           value={this.state.handle} 
           onChange={event => this.handleChange(event)}/>
-        <button type='submit' onClick={this.handleSearch}>Search</button>
+        <button type='submit'>Search</button>
       </form>
 
-      <User />
+      <User user={this.state.userData}/>
       <FollowerList followerList={this.state.followerList}/>
     </div>);
   }
