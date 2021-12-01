@@ -6,17 +6,21 @@ import axios from 'axios';
 
 class App extends React.Component {
   state = {
-    handle: '',
+    handle: 'stevenr2314',
     followerList: [],
-    githubURL: 'https://api.github.com/users/stevenr2314',
     userData: {}
   }
 
   handleSearch = event => {
     event.preventDefault()
     let handle = this.state.handle.trim()
-    this.setState({...this.state, githubURL: `https://api.github.com/users/${handle}`, handle: ''})
-    console.log('SEARCHING')
+    axios.get(`https://api.github.com/users/${handle}`)
+      .then(resp => {
+        console.log(resp.data)
+        this.setState({...this.state, userData: resp.data})
+      })
+      .catch(err => console.log(err))
+      this.setState({...this.state,handle: ''})
   }
 
   handleChange = event => {
@@ -25,13 +29,24 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-      axios.get(this.state.githubURL)
+      axios.get(`https://api.github.com/users/${this.state.handle}`)
       .then(resp => {
         console.log(resp.data)
         this.setState({...this.state, userData: resp.data})
       })
       .catch(err => console.log(err))
+      this.setState({...this.state,handle: ''})
   }
+
+  componentDidUpdate(prevState){
+    if (prevState.userData !== this.state.userData){
+      console.log('Inside If Statement')
+      axios.get(this.state.userData.followers_url)
+        .then(resp => this.setState({...this.state, followerList: resp.data}))
+        .catch(err => console.log(err))
+    }
+  }
+
   render() {
     return(
     <div>
